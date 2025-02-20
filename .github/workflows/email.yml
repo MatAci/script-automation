@@ -41,9 +41,8 @@ jobs:
       - name: 🚀 Pokretanje skripte za umetanje podataka
         run: python my_script.py
 
-      - name: 📦 Spremi ažuriranu bazu podataka kao artefakt
-        uses: actions/upload-artifact@v4
+      - name: 📦 Spremi ažuriranu bazu podataka u cache
+        uses: actions/cache@v3
         with:
-          name: alerts-database
           path: alerts.db
-
+          key: alerts-db-${{ runner.os }}-${{ github.run_id }}

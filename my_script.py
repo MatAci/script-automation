@@ -102,9 +102,9 @@ def check_price_alert():
         # Ako je pronađen posljednji neaktivni postotak
         if last_sent is not None:
             subject = "IUSA Core S&P 500 Price Alert"
-            message = f"Cijena ETF-a {TICKER} je pala za {drop_percentage:.2f}% od vrha!\n\n"
-            message += f"Trenutna cijena: {current_price:.2f} EUR\n"
-            message += f"Najveća cijena ikada: {all_time_high:.2f} EUR\n"
+            message = f"Cijena ETF-a {TICKER} je pala za {drop_percentage}% od vrha!\n\n"
+            message += f"Trenutna cijena: {current_price} EUR\n"
+            message += f"Najveća cijena ikada: {all_time_high} EUR\n"
 
             send_email(EMAIL_RECEIVER, subject, message)
 

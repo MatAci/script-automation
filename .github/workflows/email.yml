@@ -34,23 +34,7 @@ jobs:
         run: python my_script.py
 
       - name: 📦 Pohrani bazu podataka kao artefakt
-        uses: actions/upload-artifact@v3.1.0
+        uses: actions/upload-artifact@v4
         with:
           name: alerts-database
           path: alerts.db
-
-  next_job:
-    runs-on: ubuntu-latest
-    needs: send_email  # Ako želiš, možeš izbaciti ovu liniju da jobovi ne budu povezani
-
-    steps:
-      - name: 📥 Kloniranje repozitorija
-        uses: actions/checkout@v4
-
-      - name: 📥 Preuzmi bazu podataka
-        uses: actions/download-artifact@v3.1.0
-        with:
-          name: alerts-database
-
-      - name: 🚀 Pokretanje drugog skripte
-        run: python another_script.py  # Ovdje možeš koristiti podatke iz alerts.db

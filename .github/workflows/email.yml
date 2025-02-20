@@ -1,50 +1,27 @@
-name: Automatsko slanje emaila
+name: Send Email via Gmail API
 
 on:
   schedule:
-    - cron: "*/10 * * * *"  # Pokreće se svakih 10 minuta
-  workflow_dispatch:
+    - cron: '*/10 * * * *'  # Svakih 10 minuta
 
 jobs:
   send_email:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Kloniranje repozitorija
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: 🔧 Postavljanje Python okruženja
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
 
-      - name: 📦 Instalacija ovisnosti
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+    - name: Install dependencies
+      run: pip install --upgrade google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
 
-      - name: 🔑 Kreiranje client_secret.json iz GitHub Secrets
-        run: echo '${{ secrets.CLIENT_SECRET_JSON }}' > client_secret.json
-
-      - name: 🔄 Dekodiranje token.pickle iz GitHub Secrets
-        run: echo '${{ secrets.TOKEN_PICKLE }}' | base64 --decode > token.pickle
-
-      - name: 🚀 Pokretanje skripte
-        run: python my_script.py
-
-      - name: 💾 Kodiranje i spremanje novog token.pickle u GitHub Secrets
-        if: success()
-        run: |
-          echo "TOKEN_PICKLE=$(base64 token.pickle)" >> $GITHUB_ENV
-
-      - name: 🔄 Ažuriranje GitHub Secrets s novim tokenom
-        if: success()
-        uses: oktokit/request-action@v2.x
-        with:
-          route: PUT /repos/{owner}/{repo}/actions/secrets/TOKEN_PICKLE
-          owner: ${{ github.repository_owner }}
-          repo: ${{ github.event.repository.name }}
-          secret_name: TOKEN_PICKLE
-          encrypted_value: ${{ env.TOKEN_PICKLE }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Send Email
+      env:
+        CLIENT_SECRET_JSON: ${{ secrets.CLIENT_SECRET_JSON }}
+        TOKEN_PICKLE: ${{ secrets.TOKEN_PICKLE }}
+      run: python tvoj_skript.py  # Zamijeni "tvoj_skript.py" pravim nazivom skripte

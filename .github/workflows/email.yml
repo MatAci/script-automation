@@ -3,7 +3,7 @@ name: Automatsko slanje emaila
 on:
   schedule:
     - cron: "*/10 * * * *"  # Pokreće se svakih 10 minuta
-  workflow_dispatch:  # Omogućuje ručno pokretanje workflow-a
+  workflow_dispatch:
 
 jobs:
   send_email:
@@ -23,10 +23,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: 🔑 Postavljanje okolišnih varijabli
-        run: |
-          echo "TOKEN_FILE=token.pickle" >> $GITHUB_ENV
-          echo "CLIENT_SECRET_FILE=client_secret.json" >> $GITHUB_ENV
+      - name: 🔑 Dekodiranje client_secret.json iz GitHub Secrets
+        run: echo '${{ secrets.CLIENT_SECRET_JSON }}' > client_secret.json
 
       - name: 🚀 Pokretanje skripte
         run: python my_script.py

@@ -30,5 +30,26 @@ jobs:
       - name: 🔄 Dekodiranje token.pickle iz GitHub Secrets
         run: echo '${{ secrets.TOKEN_PICKLE }}' | base64 --decode > token.pickle
 
-      - name: 🚀 Pokretanje skripte
+      - name: 🚀 Pokretanje skripte za umetanje podataka
         run: python my_script.py
+
+      - name: 📦 Pohrani bazu podataka kao artefakt
+        uses: actions/upload-artifact@v2
+        with:
+          name: alerts-database
+          path: alerts.db
+
+  next_job:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Kloniranje repozitorija
+        uses: actions/checkout@v4
+
+      - name: 📥 Preuzmi bazu podataka
+        uses: actions/download-artifact@v2
+        with:
+          name: alerts-database
+
+      - name: 🚀 Pokretanje drugog skripte
+        run: python another_script.py  # Ovdje možeš koristiti podatke iz alerts.db

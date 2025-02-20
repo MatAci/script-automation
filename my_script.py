@@ -97,7 +97,7 @@ def check_price_alert():
                 if not is_active:
                     last_sent = threshold  # Pamti posljednji koji će se poslati
                 # Ažuriraj sve prethodne na true
-                cursor.execute("UPDATE percentages SET is_active = 1 WHERE id < ?", (threshold,))
+                cursor.execute("UPDATE percentages SET is_active = 1 WHERE id = ?", (threshold,))
 
         # Ako je pronađen posljednji neaktivni postotak
         if last_sent is not None:
@@ -105,7 +105,6 @@ def check_price_alert():
             message = f"Cijena ETF-a {TICKER} je pala za {drop_percentage:.2f}% od vrha!\n\n"
             message += f"Trenutna cijena: {current_price:.2f} EUR\n"
             message += f"Najveća cijena ikada: {all_time_high:.2f} EUR\n"
-            message += f"Udaljenost od ATH za {last_sent:.2f}%."  # Prikaz s dvije decimale
 
             send_email(EMAIL_RECEIVER, subject, message)
 

@@ -22,6 +22,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install python-dotenv  # U slučaju da ga nema
 
       - name: 🔑 Kreiranje client_secret.json iz GitHub Secrets
         run: echo '${{ secrets.CLIENT_SECRET_JSON }}' > client_secret.json
@@ -30,21 +31,4 @@ jobs:
         run: echo '${{ secrets.TOKEN_PICKLE }}' | base64 --decode > token.pickle
 
       - name: 🚀 Pokretanje skripte
-        run: python my_script.py  # Tvoja skripta može koristiti hardkodirani EMAIL_RECEIVER
-
-      - name: 💾 Kodiranje i spremanje novog token.pickle u GitHub Secrets
-        if: success()
-        run: |
-          echo "TOKEN_PICKLE=$(base64 token.pickle)" >> $GITHUB_ENV
-
-      - name: 🔄 Ažuriranje GitHub Secrets s novim tokenom
-        if: success()
-        uses: oktokit/request-action@v2.x
-        with:
-          route: PUT /repos/{owner}/{repo}/actions/secrets/TOKEN_PICKLE
-          owner: ${{ github.repository_owner }}
-          repo: ${{ github.event.repository.name }}
-          secret_name: TOKEN_PICKLE
-          encrypted_value: ${{ env.TOKEN_PICKLE }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python my_script.py

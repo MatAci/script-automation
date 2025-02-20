@@ -1,21 +1,22 @@
 import os
 import pickle
 import base64
-import json
 from email.mime.text import MIMEText
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
+from dotenv import load_dotenv
+import json
 
-# Hardkodirana e-mail adresa primaoca
-EMAIL_RECEIVER = "acingermateo@gmail.com"
+# Učitaj varijable iz .env datoteke
+load_dotenv()
 
 # Postavi Gmail API scope (dozvolu za slanje e-mailova)
 SCOPES = ["https://www.googleapis.com/auth/gmail.send"]
 
 # Nazivi datoteka za autorizaciju
-CLIENT_SECRET_FILE = "client_secret.json"
-TOKEN_FILE = "token.pickle"
+CLIENT_SECRET_FILE = os.getenv("CLIENT_SECRET_FILE", "client_secret.json")
+TOKEN_FILE = os.getenv("TOKEN_FILE", "token.pickle")
 
 def get_credentials():
     """Provjerava postoji li token, ako ne postoji traži prijavu preko OAuth-a"""
@@ -29,12 +30,12 @@ def get_credentials():
     # Ako nema valjanih kredencijala, pokreće OAuth prijavu
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())  # Pokušaj osvježiti token
+            creds.refresh(Request())
         else:
-            with open(CLIENT_SECRET_FILE, 'r') as file:
-                client_secret_json = file.read()
-            flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
-            creds = flow.run_local_server(port=0)  # Otvori prozor za prijavu
+            with open(CLIENT_SECRET_FILE, "r") as f:
+                client_secret_json = f.read()
+                flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
+                creds = flow.run_local_server(port=0)
 
         # Spremi token za buduće prijave
         with open(TOKEN_FILE, "wb") as token:
@@ -62,6 +63,7 @@ def send_email(to, subject, message_text):
     except Exception as e:
         print(f"❌ Greška prilikom slanja emaila: {e}")
 
-# TESTIRANJE - pokreni slanje emaila
+# TESTIRANJE
 if __name__ == "__main__":
-    send_email(EMAIL_RECEIVER, "Testni email", "Ovo je test poruka poslana iz Python skripte!")
+    receiver = os.getenv("EMAIL_RECEIVER", "acingermateo@gmail.com")  # Hardkodirano za test
+    send_email(receiver, "Testni email", "Ovo je test poruka poslana iz Python skripte!")

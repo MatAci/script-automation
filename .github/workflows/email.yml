@@ -2,7 +2,7 @@ name: Automatsko slanje emaila
 
 on:
   schedule:
-    - cron: "*/10 * * * *"  # Pokreće se svakih 10 minuta
+    - cron: "*/10 7-22 * * 1-5"  # Pokreće se svakih 10 minuta od 7:00 do 22:59, od ponedjeljka do petka
   workflow_dispatch:
 
 jobs:

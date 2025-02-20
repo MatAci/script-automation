@@ -1,33 +1,32 @@
-
-name: Send Email Every 10 Minutes
+name: Automatsko slanje emaila
 
 on:
   schedule:
-    - cron: '*/10 * * * *'  # Pokreće se svakih 10 minuta
-  workflow_dispatch:  # Omogućuje ručno pokretanje u GitHub Actions
+    - cron: "*/10 * * * *"  # Pokreće se svakih 10 minuta
+  workflow_dispatch:  # Omogućuje ručno pokretanje workflow-a
 
 jobs:
   send_email:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout repozitorija
+      - name: 📥 Kloniranje repozitorija
         uses: actions/checkout@v4
 
-      - name: 🐍 Postavljanje Python okruženja
+      - name: 🔧 Postavljanje Python okruženja
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: "3.10"
 
-      - name: 📦 Instalacija paketa
+      - name: 📦 Instalacija ovisnosti
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: 🔑 Postavljanje Google OAuth kredencijala
-        run: echo "$CLIENT_SECRET_JSON" > client_secret.json
-        env:
-          CLIENT_SECRET_JSON: ${{ secrets.CLIENT_SECRET_JSON }}
+      - name: 🔑 Postavljanje okolišnih varijabli
+        run: |
+          echo "TOKEN_FILE=token.pickle" >> $GITHUB_ENV
+          echo "CLIENT_SECRET_FILE=client_secret.json" >> $GITHUB_ENV
 
       - name: 🚀 Pokretanje skripte
         run: python my_script.py

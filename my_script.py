@@ -75,8 +75,6 @@ def insert_random_data():
     # Umetni u tablicu
     cursor.execute("INSERT INTO alerts (field1, field2) VALUES (?, ?)", (random_value, None))
 
-    # Prenesi vrijednost iz field1 u field2
-    cursor.execute("UPDATE alerts SET field2 = field1 WHERE id = (SELECT MAX(id) FROM alerts)")
 
     conn.commit()
     conn.close()

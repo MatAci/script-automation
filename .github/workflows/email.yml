@@ -30,7 +30,7 @@ jobs:
         run: echo '${{ secrets.TOKEN_PICKLE }}' | base64 --decode > token.pickle
 
       - name: 🚀 Pokretanje skripte
-        run: python my_script.py  # Zamijeni s pravim nazivom tvoje skripte
+        run: python my_script.py  # Tvoja skripta može koristiti hardkodirani EMAIL_RECEIVER
 
       - name: 💾 Kodiranje i spremanje novog token.pickle u GitHub Secrets
         if: success()
@@ -39,18 +39,12 @@ jobs:
 
       - name: 🔄 Ažuriranje GitHub Secrets s novim tokenom
         if: success()
-        uses: actions/github-script@v5
+        uses: oktokit/request-action@v2.x
         with:
-          script: |
-            const secretValue = process.env.TOKEN_PICKLE;
-            const { Octokit } = require("@octokit/rest");
-            const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
-
-            await octokit.actions.createOrUpdateRepoSecret({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              secret_name: "TOKEN_PICKLE",
-              encrypted_value: secretValue,
-            });
+          route: PUT /repos/{owner}/{repo}/actions/secrets/TOKEN_PICKLE
+          owner: ${{ github.repository_owner }}
+          repo: ${{ github.event.repository.name }}
+          secret_name: TOKEN_PICKLE
+          encrypted_value: ${{ env.TOKEN_PICKLE }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

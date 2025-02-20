@@ -1,0 +1,19 @@
+# Ignoriraj osjetljive datoteke
+client_secret.json
+token.pickle
+.env
+
+# Ignoriraj virtualno okruženje
+venv/
+.env/
+
+# Ignoriraj privremene datoteke i cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+
+# Ignoriraj logove
+*.log
+logs/

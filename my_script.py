@@ -85,19 +85,19 @@ def check_price_alert():
 
     if ath_record == all_time_high:
         # Postotci od 1 do 30
-        thresholds = [round(i / 10, 2) for i in range(10, 301)]  # 1.00, 1.50, 2.00, ..., 30.00
+        thresholds = [i / 2 for i in range(2, 61)]  # 1.0, 1.5, 2.0, ..., 30.0
         last_sent = None
 
         for threshold in thresholds:
             drop_percentage = ((all_time_high - current_price) / all_time_high) * 100
             if drop_percentage >= threshold:
-                cursor.execute("SELECT is_active FROM percentages WHERE id = ?", (threshold))
+                cursor.execute("SELECT is_active FROM percentages WHERE id = ?", (threshold,))
                 is_active = cursor.fetchone()[0]
 
                 if not is_active:
                     last_sent = threshold  # Pamti posljednji koji će se poslati
                 # Ažuriraj sve prethodne na true
-                cursor.execute("UPDATE percentages SET is_active = 1 WHERE id < ?", (threshold))
+                cursor.execute("UPDATE percentages SET is_active = 1 WHERE id < ?", (threshold,))
 
         # Ako je pronađen posljednji neaktivni postotak
         if last_sent is not None:
@@ -111,7 +111,7 @@ def check_price_alert():
 
     else:
         # Ažuriraj trenutni ATH i postavi sve is_active na 0
-        cursor.execute("UPDATE ath SET ath = ? WHERE id = 1", (all_time_high))
+        cursor.execute("UPDATE ath SET ath = ? WHERE id = 1", (all_time_high,))
         cursor.execute("UPDATE percentages SET is_active = 0")
         conn.commit()  # Spremi promjene
 

@@ -1,12 +1,13 @@
 import os
 import pickle
 import base64
+import sqlite3
+import random
 from email.mime.text import MIMEText
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from dotenv import load_dotenv
-import json
 
 # Učitaj varijable iz .env datoteke
 load_dotenv()
@@ -63,7 +64,25 @@ def send_email(to, subject, message_text):
     except Exception as e:
         print(f"❌ Greška prilikom slanja emaila: {e}")
 
+def insert_random_data():
+    """Umetni random broj u field1 i prenesi u field2"""
+    conn = sqlite3.connect('alerts.db')
+    cursor = conn.cursor()
+
+    # Generiraj nasumični broj za field1
+    random_value = random.randint(1, 100)  # Možeš prilagoditi raspon
+
+    # Umetni u tablicu
+    cursor.execute("INSERT INTO alerts (field1, field2) VALUES (?, ?)", (random_value, None))
+
+    # Prenesi vrijednost iz field1 u field2
+    cursor.execute("UPDATE alerts SET field2 = field1 WHERE id = (SELECT MAX(id) FROM alerts)")
+
+    conn.commit()
+    conn.close()
+
 # TESTIRANJE
 if __name__ == "__main__":
     receiver = os.getenv("EMAIL_RECEIVER", "acingermateo@gmail.com")  # Hardkodirano za test
-    send_email(receiver, "Testni email", "Ovo je test poruka poslana iz Python skripte!")
+    insert_random_data()  # Umetni nasumične podatke
+    send_email(receiver, "Testni email", "Podaci su uspješno uneseni u bazu.")

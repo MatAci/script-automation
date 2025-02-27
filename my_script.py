@@ -93,9 +93,9 @@ def check_price_alert():
         for threshold in thresholds:
             if drop_percentage >= threshold:
                 cursor.execute("SELECT is_active FROM percentages WHERE id = ?", (threshold,))
-                is_active = cursor.fetchone()[0]
-
-                if not is_active:
+                result = cursor.fetchone()
+                
+                if result is not None and not result[0]:  # Ako is_active postoji i nije aktivan
                     last_sent = threshold  # Pamti posljednji koji će se poslati
                 # Ažuriraj sve prethodne na true
                 cursor.execute("UPDATE percentages SET is_active = 1 WHERE id = ?", (threshold,))

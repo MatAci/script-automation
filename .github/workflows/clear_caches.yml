@@ -1,15 +1,33 @@
-name: Clear Cache
+name: Očisti cache
 
 on:
-  workflow_dispatch:  # Omogućava ručno pokretanje workflow-a
+  workflow_dispatch:  # Omogućava ručno pokretanje
 
 jobs:
   clear_cache:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📦 Izbriši cache-ove
-  run: |
-    curl -X DELETE -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
-    "https://api.github.com/repos/${{ github.repository }}/actions/caches"
+      - name: 📦 Dohvati listu cache-ova
+        id: get_caches
+        run: |
+          caches=$(curl -H "Accept: application/vnd.github.v3+json" \
+                        -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
+                        https://api.github.com/repos/${{ github.repository }}/actions/caches)
+          echo "Caches: $caches"
 
+      - name: 🗑️ Izbriši sve cache-ove
+        run: |
+          caches=$(echo '${{ steps.get_caches.outputs.caches }}' | jq -r '.total_count')
+          if [[ "$caches" -gt 0 ]]; then
+            cache_ids=$(echo '${{ steps.get_caches.outputs.caches }}' | jq -r '.caches[].id')
+            for id in $cache_ids; do
+              echo "Brisanje cache-a s ID-jem: $id"
+              curl -X DELETE \
+                   -H "Accept: application/vnd.github.v3+json" \
+                   -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
+                   "https://api.github.com/repos/${{ github.repository }}/actions/caches/$id"
+            done
+          else
+            echo "Nema cache-ova za brisanje."
+          fi

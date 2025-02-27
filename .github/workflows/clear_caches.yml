@@ -8,28 +8,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Brisanje svih cache-ova
-        run: |
-          # Dobij sve cache-ove
-          caches=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/actions/caches")
+      - name: 📦 Izbriši cache-ove
+  run: |
+    curl -X DELETE -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
+    "https://api.github.com/repos/${{ github.repository }}/actions/caches"
 
-          # Ako nema cache-ova, izlazi
-          if [ "$(echo $caches | jq '.total_count')" -eq 0 ]; then
-            echo "Nema cache-ova za brisanje."
-            exit 0
-          fi
-
-          # Izbriši svaki cache
-          for cache in $(echo $caches | jq -r '.actions_caches[] | @base64'); do
-            _jq() {
-              echo ${cache} | base64 --decode | jq -r ${1}
-            }
-
-            cache_id=$(_jq '.id')
-            echo "Brisanje cache-a ID: $cache_id"
-            curl -X DELETE -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/${{ github.repository }}/actions/caches/$cache_id"
-          done
-
-          echo "Svi cache-ovi su obrisani."

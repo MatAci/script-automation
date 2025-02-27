@@ -1,33 +1,41 @@
-name: Očisti cache
+name: Clear cache
 
 on:
-  workflow_dispatch:  # Omogućava ručno pokretanje
+  workflow_dispatch:
+
+permissions:
+  actions: write
 
 jobs:
-  clear_cache:
+  clear-cache:
     runs-on: ubuntu-latest
-
     steps:
-      - name: 📦 Dohvati listu cache-ova
-        id: get_caches
-        run: |
-          caches=$(curl -H "Accept: application/vnd.github.v3+json" \
-                        -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
-                        https://api.github.com/repos/${{ github.repository }}/actions/caches)
-          echo "Caches: $caches"
+      - name: Clear cache
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log("About to clear caches...")
+            const caches = await github.rest.actions.getActionsCacheList({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            
+            if (caches.data.total_count === 0) {
+              console.log("No caches to clear.");
+              return;
+            }
 
-      - name: 🗑️ Izbriši sve cache-ove
-        run: |
-          caches=$(echo '${{ steps.get_caches.outputs.caches }}' | jq -r '.total_count')
-          if [[ "$caches" -gt 0 ]]; then
-            cache_ids=$(echo '${{ steps.get_caches.outputs.caches }}' | jq -r '.caches[].id')
-            for id in $cache_ids; do
-              echo "Brisanje cache-a s ID-jem: $id"
-              curl -X DELETE \
-                   -H "Accept: application/vnd.github.v3+json" \
-                   -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" \
-                   "https://api.github.com/repos/${{ github.repository }}/actions/caches/$id"
-            done
-          else
-            echo "Nema cache-ova za brisanje."
-          fi
+            for (const cache of caches.data.actions_caches) {
+              console.log(`Deleting cache with ID: ${cache.id}`);
+              try {
+                await github.rest.actions.deleteActionsCacheById({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  cache_id: cache.id,
+                });
+                console.log(`Successfully deleted cache ID: ${cache.id}`);
+              } catch (error) {
+                console.error(`Failed to delete cache ID: ${cache.id}`, error);
+              }
+            }
+            console.log("Clear completed");

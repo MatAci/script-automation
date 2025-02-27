@@ -30,11 +30,17 @@ jobs:
       - name: 🔄 Dekodiranje token.pickle iz GitHub Secrets
         run: echo '${{ secrets.TOKEN_PICKLE }}' | base64 --decode > token.pickle
 
-      # Ovdje ne uzimamo cache, nego odmah uzimamo novu bazu iz direktorija
+      - name: 📦 Preuzmi bazu podataka iz cachea
+        uses: actions/cache@v3
+        with:
+          path: alerts.db
+          key: alerts-db-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            alerts-db-${{ runner.os }}-
+
       - name: 🚀 Pokretanje skripte za umetanje podataka
         run: python my_script.py
 
-      # Spremamo novu verziju baze podataka u cache
       - name: 📦 Spremi ažuriranu bazu podataka u cache
         uses: actions/cache@v3
         with:

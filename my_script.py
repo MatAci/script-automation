@@ -84,12 +84,13 @@ def check_price_alert():
     ath_record = cursor.fetchone()[0]
 
     if ath_record == all_time_high:
-        # Postotci od 1 do 30
-        thresholds = [i / 2 for i in range(2, 61)]  # 1.0, 1.5, 2.0, ..., 30.0
+        # Postotci od 0.25 do 30 s korakom 0.25
+        thresholds = [i / 4 for i in range(1, 121)]  # 0.25, 0.50, 0.75, ..., 30.0
         last_sent = None
 
+        drop_percentage = round(((all_time_high - current_price) / all_time_high) * 100, 4)
+
         for threshold in thresholds:
-            drop_percentage = ((all_time_high - current_price) / all_time_high) * 100
             if drop_percentage >= threshold:
                 cursor.execute("SELECT is_active FROM percentages WHERE id = ?", (threshold,))
                 is_active = cursor.fetchone()[0]
@@ -102,14 +103,15 @@ def check_price_alert():
         # Ako je pronađen posljednji neaktivni postotak
         if last_sent is not None:
             subject = "IUSA Core S&P 500 Price Alert"
-            message = f"Cijena ETF-a {TICKER} je pala za {drop_percentage:.4f}% od vrha!\n\n"
-            message += f"Trenutna cijena: {current_price:.4f} EUR\n"
-            message += f"Najveća cijena ikada: {all_time_high:.4f} EUR\n"
-
+            message = (
+                f"Cijena ETF-a {TICKER} je pala za {drop_percentage:.4f}% od vrha!\n\n"
+                f"Trenutna cijena: {current_price:.4f} EUR\n"
+                f"Najveća cijena ikada: {all_time_high:.4f} EUR\n"
+            )
             send_email(EMAIL_RECEIVER, subject, message)
 
     else:
-        # Ažuriraj trenutni ATH i postavi sve is_active na 0
+        # Ažuriraj trenutni ATH i resetiraj is_active za sve postotke
         cursor.execute("UPDATE ath SET ath = ? WHERE id = 1", (all_time_high,))
         cursor.execute("UPDATE percentages SET is_active = 0")
         conn.commit()  # Spremi promjene
@@ -117,10 +119,11 @@ def check_price_alert():
         print("✅ Ažuriran ATH i resetiran status aktivacije u percentages.")
 
         # Ponovno provjeri uvjete za slanje emaila
-        check_price_alert()  # Pozivamo istu funkciju da provjerimo nove uvjete
+        check_price_alert()  # Ponovni poziv funkcije nakon ažuriranja ATH-a
 
     conn.commit()
     conn.close()
+
 
 if __name__ == "__main__":
     check_price_alert()

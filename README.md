@@ -1,6 +1,6 @@
 # script-automation
-python3 -m venv venv
+python3 -m venv venv2
 
-source venv/bin/activate
+source venv2/bin/activate
 
 pip install -r requirements.txt

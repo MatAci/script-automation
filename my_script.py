@@ -33,17 +33,27 @@ def get_credentials():
         with open(TOKEN_FILE, "rb") as token:
             creds = pickle.load(token)
 
+    # Provjeri valjanost tokena
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
+            try:
+                creds.refresh(Request())
+            except ReferenceError as e:
+                print("❌ Greška pri obnavljanju tokena: ", e)
+                print("Započnite proces autentifikacije ponovo.")
+                flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
+                creds = flow.run_local_server(port=0)
         else:
+            # Ako nema kredencijala, pokreni proces prijave
             flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
             creds = flow.run_local_server(port=0)
 
+        # Spremi nove kredencijale
         with open(TOKEN_FILE, "wb") as token:
             pickle.dump(creds, token)
 
     return creds
+
 
 def send_email(to, subject, message_text):
     """Šalje email pomoću Gmail API-ja"""

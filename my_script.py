@@ -93,6 +93,7 @@ def check_price_alert():
     cursor.execute("SELECT ath FROM ath WHERE id = 1")
     ath_record = cursor.fetchone()[0]
 
+
     if ath_record == all_time_high:
         # Postotci od 0.25 do 30 s korakom 0.25
         thresholds = [i / 4 for i in range(1, 121)]  # 0.25, 0.50, 0.75, ..., 30.0
@@ -121,6 +122,14 @@ def check_price_alert():
             send_email(EMAIL_RECEIVER, subject, message)
 
     else:
+
+        cursor.execute("SELECT MAX(id) FROM percentages WHERE active = 1")
+        max_perc = cursor.fetchone()[0]
+
+        if max_perc - ((1 - (current_price / all_time_high)) * 100.00) >= 2.5:
+            cursor.execute("UPDATE percentages SET is_active = 0")
+            conn.commit()
+
         # Ažuriraj trenutni ATH i resetiraj is_active za sve postotke
         cursor.execute("UPDATE ath SET ath = ? WHERE id = 1", (all_time_high,))
         cursor.execute("UPDATE percentages SET is_active = 0")
